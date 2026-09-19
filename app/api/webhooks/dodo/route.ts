@@ -13,7 +13,7 @@ async function verify(rawBody: string, request: Request) {
   const secret = key.startsWith("whsec_") ? key.slice(6) : key;
   let secretBytes: Uint8Array;
   try { secretBytes = Uint8Array.from(atob(secret), (char) => char.charCodeAt(0)); } catch { return false; }
-  const cryptoKey = await crypto.subtle.importKey("raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const cryptoKey = await crypto.subtle.importKey("raw", secretBytes.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const signed = await crypto.subtle.sign("HMAC", cryptoKey, new TextEncoder().encode(`${id}.${timestamp}.${rawBody}`));
   const expected = bytesToBase64(signed);
   return signatures.some((value) => value === `v1,${expected}`);
