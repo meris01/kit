@@ -1,0 +1,2 @@
+import {session,dodo,json,config,type PaymentStatus} from '../../../lib/payment';
+export async function GET(request:Request){try{const s=await session(request);if(!s)return json({status:'unknown'});const payment=await dodo<PaymentStatus>('/checkouts/'+encodeURIComponent(s.id));const status=payment.payment_status||'pending';return json({status,...(status==='succeeded'?{redirectUrl:config().delivery}:{})});}catch{return json({status:'unavailable'},503);}}
