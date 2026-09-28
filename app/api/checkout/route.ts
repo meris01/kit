@@ -2,7 +2,8 @@ import { config,dodo,sign,session,json,type Product,type Checkout } from '../../
 export async function POST(request:Request){
  try{
   const c=config(); const origin=request.headers.get('origin');const requestUrl=new URL(request.url);
-  const allowed=new Set([new URL(c.site).origin]);if(process.env.NODE_ENV!=='production'){allowed.add('http://localhost:5173');allowed.add('http://127.0.0.1:5173');}
+  const site=new URL(c.site);const bare=site.hostname.replace(/^www\./,'');
+  const allowed=new Set([site.origin,`${site.protocol}//${bare}`,`${site.protocol}//www.${bare}`]);if(process.env.NODE_ENV!=='production'){allowed.add('http://localhost:5173');allowed.add('http://127.0.0.1:5173');}
   if(!origin||!allowed.has(origin)||request.headers.get('sec-fetch-site')==='cross-site')return json({error:'Please start checkout from the kit page.'},403);
   const recent=await session(request);if(recent&&Date.now()-recent.issued<15000)return json({error:'Please wait a few seconds before reopening checkout.'},429,{'Retry-After':'15'});
   // Never accept a product, quantity, price or redirect URL from the browser.
